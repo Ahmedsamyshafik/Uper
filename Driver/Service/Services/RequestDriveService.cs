@@ -29,17 +29,38 @@ namespace Driver.Service.Services
                 PassingerID = requestDriverDTO.PassingerID,
                 price = requestDriverDTO.price,
                 Source = requestDriverDTO.Source,
-                Target = requestDriverDTO.Target,
-                
+                Target = requestDriverDTO.Target
+
             };
             await _requestDriveRepository.AddAsync(saving);
-            return new RequestDriverResponseDTO { busy=false };
+            return new RequestDriverResponseDTO { busy = false };
 
         }
 
         public async Task<List<RequestDrive>> GetDriverRequests(string driverId)
         {
-            return await _requestDriveRepository.GetTableNoTracking().Where(x=>x.DriverID==driverId).ToListAsync();
+            return await _requestDriveRepository.GetTableNoTracking().Include(p=>p.Passenger).Where(x => x.DriverID == driverId).ToListAsync();
+        }
+
+        public async Task<string> HandleRequest(int requestID, bool Accept)
+        {
+            var request = await _requestDriveRepository.GetTableNoTracking().Where(x => x.id == requestID).FirstOrDefaultAsync();
+            if (Accept)
+            {
+                var trip = new Trip()
+                {
+                    DriverID= request.DriverID,
+                    PassengerID= request.PassingerID,
+                    Price= request.price,
+                    Source= request.Source,
+                    Target= request.Target,
+                   
+                };
+                await _tripService.AddTrip(trip);
+            }
+            await _requestDriveRepository.DeleteAsync(request);
+
+            return "";
         }
     }
 }

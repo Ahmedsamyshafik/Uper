@@ -14,9 +14,6 @@ namespace Driver.DTOs.UserDTos.Register
         [Required]
         public string Password { get; set; }
 
-        //[Required]
-       // [Compare("Password")]
-       // public string ConfirmPassword { get; set; }
         [Required]
         public string UserType { get; set; }
 
@@ -25,7 +22,14 @@ namespace Driver.DTOs.UserDTos.Register
         public string Region { get; set; }
 
         public string Gender { get; set; }
+   
 
-        // image?
+      
+        //If Driver
+        public IFormFile? Image { get; set; }
+        public bool IsSmoking { get; set; }
+        public string? CarType { get; set; }
+
+
     }
 }

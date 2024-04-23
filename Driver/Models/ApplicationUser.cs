@@ -4,7 +4,7 @@ namespace Driver.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        //Name Email Password Role
+       
         public string? imageUrl { get; set; }
         public string Region { get; set; }
         public string? Address { get; set; }
@@ -13,6 +13,7 @@ namespace Driver.Models
         public bool IsBusy { get; set; }
         public bool IsBlocked { get; set; } 
         public decimal Rate { get; set; }
+        public int UsersRating { get; set; }
         //عدد مرات الرحلات سواء لليوزر او الدرايفر
         public int Counter { get; set; }
 
@@ -20,7 +21,10 @@ namespace Driver.Models
 
         public string Gender { get; set; }
 
-
+        //Navigations
+        public ICollection<RequestDrive> Requests { get; set; }
+        public ICollection<Trip> Trips { get; set; }
+      
 
 
 

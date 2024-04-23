@@ -23,11 +23,12 @@ namespace Driver.Controllers
 
         #region Hanlde Functions
         [HttpPost("[action]")]
-        public async Task<IActionResult> Register(RegisterDTO DTO)
+        public async Task<IActionResult> Register([FromForm]RegisterDTO DTO)
         {
             var result = await _authService.RegisterAsync(DTO);
             if (result.message == "Existing") return BadRequest(new { code = result.message, message = result.error });
             if (result.message == "Password") return BadRequest(new { code = result.message, message = result.error });
+            if (result.message == "Image") return BadRequest(new { code = result.message, message = result.error });
             return Ok();
         }
 

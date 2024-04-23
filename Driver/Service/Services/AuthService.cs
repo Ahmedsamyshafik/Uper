@@ -18,14 +18,15 @@ namespace Driver.Service.Services
         #region Fields
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _contextAccessor;
         #endregion
 
         #region Ctor
-        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration)
+        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration, IHttpContextAccessor contextAccessor)
         {
             _userManager = userManager;
             _configuration = configuration;
-
+            _contextAccessor = contextAccessor;
         }
 
 
@@ -41,14 +42,17 @@ namespace Driver.Service.Services
 
                 return new RegisterErrorResponeDTO() { message = "Existing", error = "Email Or Name is Already Registered" };
             }
-
+           
             //maping from RegisterDTO to ApplicationUser
             var user = new ApplicationUser() // Role - Password 
             {
                 Email = model.Email,
                 UserName = model.UserName,
                 Region = model.Region,
-                Gender = model.Gender
+                Gender = model.Gender,
+                Address=model.Address,
+                IsSmoking= model.IsSmoking,
+                CarType = model.CarType,
             };
             //Create User  
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -69,6 +73,23 @@ namespace Driver.Service.Services
             //Seed Role "User-Driver"
             var y = await _userManager.AddToRoleAsync(user, model.UserType);
             await _userManager.UpdateAsync(user);
+            //Save Image
+            if(model.Image != null && model.Image.Length > 0)
+            {
+                var host = _contextAccessor.HttpContext.Request.Host;
+                var schema = _contextAccessor.HttpContext.Request.Scheme;
+               var response= await SavingImage(model.Image,schema,host);
+                if (response.success)
+                {
+                    user.imageUrl = response.messageOrUrl;
+                    await _userManager.UpdateAsync(user);
+                }
+                else
+                {
+                    return new RegisterErrorResponeDTO() { error = "Image", message = response.messageOrUrl };
+                }
+            }
+
             return new RegisterErrorResponeDTO() { message = "Success" };
         }
         public async Task<LoginResponseDTO> Login(LoginDTO model)
@@ -102,7 +123,8 @@ namespace Driver.Service.Services
                 IsAuthenticated = true,
                 Region = user.Region,
                 userId = user.Id,
-                UserName = user.UserName
+                UserName = user.UserName,
+                ImageUrl=user.imageUrl
             };
             //roleing
             if (roles.Contains(Constants.AdminRole))
@@ -121,6 +143,54 @@ namespace Driver.Service.Services
             returned.Token = new JwtSecurityTokenHandler().WriteToken(JwtSecuirtyToken);
             return returned;
         }
+        #endregion
+
+        #region Accept Users
+
+        public async Task<List<ListUsers>> ListOfUsers()
+        {
+            var lst = _userManager.Users.ToList().Where(x => x.IsActive == false);
+            var result = new List<ListUsers>();
+            foreach (var user in lst)
+            {
+                var temp = new ListUsers();
+                temp.gender = user.Gender;
+                temp.address = user.Address;
+                temp.region = user.Region;
+                temp.email = user.Email;
+                temp.name = user.UserName;
+                var roles = await _userManager.GetRolesAsync(user);
+                temp.Role = roles.FirstOrDefault();
+                temp.id = user.Id;
+                temp.ImageUrl=user.imageUrl;
+                
+                result.Add(temp);
+            }
+            return result;
+        }
+
+        public async Task<string> UserActivation(UserActivation activation)
+        {
+            var user = await _userManager.FindByIdAsync(activation.Id);
+            if (user == null) return "Not Exist";
+            if (!activation.Active)
+            {
+                await _userManager.DeleteAsync(user);
+            }
+            user.IsActive = true;
+            await _userManager.UpdateAsync(user);
+            return "Success";
+        }
+            #endregion
+
+        public async Task<ApplicationUser> GetUserById(string userid)
+        {
+            return await _userManager.FindByIdAsync(userid);
+        }
+
+        #endregion
+
+        #region Private Function
         private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
         {
             var userClaims = await _userManager.GetClaimsAsync(user);
@@ -156,49 +226,54 @@ namespace Driver.Service.Services
             };
             return token;
         }
+        private class responsing
+        {
+            public bool success;
+            public string messageOrUrl;
+            public string name;
+
+        }
+
+        private async Task<responsing> SavingImage(IFormFile imageFile, string requestSchema, HostString hostString)
+        {
+            string _uploadsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+            try
+            {
+                
+
+                // Ensure the uploads directory exists
+                Directory.CreateDirectory(_uploadsDirectory);
+
+                // Generate a unique file name
+                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+
+                // Combine the uploads directory with the unique file name
+                var filePath = Path.Combine(_uploadsDirectory, uniqueFileName);
+
+                // Save the uploaded file to the uploads directory
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    imageFile.CopyTo(fileStream);
+                }
+
+                // Construct the URL to access the uploaded file
+                //  var imageUrl = $"{Request.Scheme}://{Request.Host}/uploads/{uniqueFileName}";
+                var imageUrl = $"{requestSchema}://{hostString}/images/{uniqueFileName}";
+
+
+                // Return the URL of the uploaded image
+                return new responsing() { success = true, messageOrUrl = imageUrl, name = uniqueFileName };
+
+            }
+            catch (Exception ex)
+            {
+                return new responsing() { success = false, messageOrUrl = $"An error occurred: {ex.Message}" };
+
+
+            }
+        }
+
+
         #endregion
-
-        #region Accept Users
-
-        public async Task<List<ListUsers>> ListOfUsers()
-        {
-            var lst = _userManager.Users.ToList().Where(x => x.IsActive == false);
-            var result = new List<ListUsers>();
-            foreach (var user in lst)
-            {
-                var temp = new ListUsers();
-                temp.gender = user.Gender;
-                temp.address = user.Address;
-                temp.region = user.Region;
-                temp.email = user.Email;
-                temp.name = user.UserName;
-                var roles = await _userManager.GetRolesAsync(user);
-                temp.Role = roles.FirstOrDefault();
-                temp.id = user.Id;
-                result.Add(temp);
-            }
-            return result;
-        }
-
-        public async Task<string> UserActivation(UserActivation activation)
-        {
-            var user = await _userManager.FindByIdAsync(activation.Id);
-            if (user == null) return "Not Exist";
-            if (!activation.Active)
-            {
-                await _userManager.DeleteAsync(user);
-            }
-            user.IsActive = true;
-            await _userManager.UpdateAsync(user);
-            return "Success";
-        }
-            #endregion
-
-        public async Task<ApplicationUser> GetUserById(string userid)
-        {
-            return await _userManager.FindByIdAsync(userid);
-        }
-
-            #endregion
-        }
     }
+}

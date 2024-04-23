@@ -17,6 +17,10 @@ namespace Driver.Models
 
         public decimal price { get; set; }
 
-        public virtual ApplicationUser? applicationUser { get; set; }
+
+
+        public virtual ApplicationUser Passenger { get; set; } // Navigation property to ApplicationUser
+        public virtual ApplicationUser Driver { get; set; } // Navigation property to ApplicationUser
+       // public virtual Trip Trip { get; set; } // Navigation property to Trip
     }
 }

@@ -10,6 +10,7 @@ namespace Driver.Service
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IRequestDriveService, RequestDriveService>();
             services.AddScoped<ITripService, TripService>();
+            services.AddScoped<IUserService, UserService>();
 
             return services;
         }

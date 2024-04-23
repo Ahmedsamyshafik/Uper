@@ -117,7 +117,7 @@ builder.Services.AddCors(corsOptions =>
     corsOptions.AddPolicy("MyPolicy", corsPolicyBuilder =>
     {
         corsPolicyBuilder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-        corsPolicyBuilder.WithOrigins("http://localhost:3001", "http://localhost:3000");
+        //corsPolicyBuilder.WithOrigins("http://localhost:3001", "http://localhost:3000");
 
     });
 });
@@ -140,10 +140,12 @@ app.UseSwaggerUI();
 
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.UseCors("MyPolicy");
 
 app.UseAuthentication();
+
 app.UseAuthorization();
 
 

@@ -33,16 +33,27 @@ namespace Driver.Controllers
                 //temp
                 AllDriverRequestedResponseDTO temp = new()
                 {
+
                     dateTime = request.DateTime,
                     name = pass.UserName,
                     price = request.price,
                     Source = request.Source,
                     Target = request.Target,
-                    id = request.id
+                    id = request.id,
+                    ImageUrl =request.Passenger.imageUrl
+
+
                 };
                 response.Add(temp);
             }
             return Ok(response);
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> HandleRequest(int Requestid, bool Accept)
+        {
+            await _driveService.HandleRequest(Requestid, Accept);
+            return Ok("Success");
         }
 
 

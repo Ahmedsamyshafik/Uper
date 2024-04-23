@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Driver.Migrations
 {
     /// <inheritdoc />
-    public partial class identity : Migration
+    public partial class initd : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,14 +32,15 @@ namespace Driver.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     imageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Region = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsSmoking = table.Column<bool>(type: "bit", nullable: false),
-                    CarType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CarType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsBusy = table.Column<bool>(type: "bit", nullable: false),
                     IsBlocked = table.Column<bool>(type: "bit", nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Counter = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -166,6 +167,95 @@ namespace Driver.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "driverRatings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DriverID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserID = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Rate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DateTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_driverRatings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_driverRatings_AspNetUsers_DriverID",
+                        column: x => x.DriverID,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "trips",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PassengerID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DriverID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Source = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Target = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    isComplete = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_trips", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_trips_AspNetUsers_DriverID",
+                        column: x => x.DriverID,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_trips_AspNetUsers_PassengerID",
+                        column: x => x.PassengerID,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RequestDrive",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PassingerID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DriverID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Source = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Target = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Tripid = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RequestDrive", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_RequestDrive_AspNetUsers_DriverID",
+                        column: x => x.DriverID,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RequestDrive_AspNetUsers_PassingerID",
+                        column: x => x.PassingerID,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RequestDrive_trips_Tripid",
+                        column: x => x.Tripid,
+                        principalTable: "trips",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -204,6 +294,36 @@ namespace Driver.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_driverRatings_DriverID",
+                table: "driverRatings",
+                column: "DriverID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestDrive_DriverID",
+                table: "RequestDrive",
+                column: "DriverID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestDrive_PassingerID",
+                table: "RequestDrive",
+                column: "PassingerID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestDrive_Tripid",
+                table: "RequestDrive",
+                column: "Tripid");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_trips_DriverID",
+                table: "trips",
+                column: "DriverID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_trips_PassengerID",
+                table: "trips",
+                column: "PassengerID");
         }
 
         /// <inheritdoc />
@@ -225,7 +345,16 @@ namespace Driver.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "driverRatings");
+
+            migrationBuilder.DropTable(
+                name: "RequestDrive");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "trips");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

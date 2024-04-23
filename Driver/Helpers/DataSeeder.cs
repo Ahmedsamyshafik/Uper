@@ -39,7 +39,8 @@ namespace Driver.Helpers
                     Region = "Muslim",
                     EmailConfirmed = true,
                     IsActive= true,
-                    Address = "Domiat" // Your Address
+                    Address = "Domiat" ,// Your Address
+                    Gender="Male"
                 };
 
                 var result = userManager.CreateAsync(adminUser, "Alahly1907#").Result;

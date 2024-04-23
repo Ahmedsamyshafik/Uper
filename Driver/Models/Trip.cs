@@ -2,7 +2,7 @@
 {
     public class Trip
     {
-        public string id { get; set; }
+        public int id { get; set; }
 
         public string PassengerID { get; set; }
         public string DriverID { get; set; }
@@ -13,7 +13,8 @@
         public string Target { get; set; }
         public bool isComplete { get; set; }
 
-        public ApplicationUser User { get; set; }   
+        public virtual ApplicationUser Passenger { get; set; } // Navigation property to ApplicationUser
+        public virtual ApplicationUser Driver { get; set; } // Navigation property to ApplicationUser
 
     }
 }

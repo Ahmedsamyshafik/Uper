@@ -19,8 +19,8 @@
 
         public string Message { get; set; }
         public bool IsAuthenticated { get; set; }
-         
 
+        public string? ImageUrl { get; set; }
         public string? CarType { get; set; }
 
         public string? Address { get; set; }

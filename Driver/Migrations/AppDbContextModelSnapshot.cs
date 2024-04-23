@@ -106,6 +106,9 @@ namespace Driver.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<int>("UsersRating")
+                        .HasColumnType("int");
+
                     b.Property<string>("imageUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -135,11 +138,11 @@ namespace Driver.Migrations
 
                     b.Property<string>("DriverID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PassingerID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Source")
                         .IsRequired()
@@ -149,31 +152,33 @@ namespace Driver.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("applicationUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<decimal>("price")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("id");
 
-                    b.HasIndex("applicationUserId");
+                    b.HasIndex("DriverID");
+
+                    b.HasIndex("PassingerID");
 
                     b.ToTable("RequestDrive");
                 });
 
             modelBuilder.Entity("Driver.Models.Trip", b =>
                 {
-                    b.Property<string>("id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
                     b.Property<string>("DriverID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PassengerID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -186,16 +191,14 @@ namespace Driver.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<bool>("isComplete")
                         .HasColumnType("bit");
 
                     b.HasKey("id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("DriverID");
+
+                    b.HasIndex("PassengerID");
 
                     b.ToTable("trips");
                 });
@@ -335,22 +338,40 @@ namespace Driver.Migrations
 
             modelBuilder.Entity("Driver.Models.RequestDrive", b =>
                 {
-                    b.HasOne("Driver.Models.ApplicationUser", "applicationUser")
+                    b.HasOne("Driver.Models.ApplicationUser", "Driver")
                         .WithMany()
-                        .HasForeignKey("applicationUserId");
+                        .HasForeignKey("DriverID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.Navigation("applicationUser");
+                    b.HasOne("Driver.Models.ApplicationUser", "Passenger")
+                        .WithMany("Requests")
+                        .HasForeignKey("PassingerID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Passenger");
                 });
 
             modelBuilder.Entity("Driver.Models.Trip", b =>
                 {
-                    b.HasOne("Driver.Models.ApplicationUser", "User")
+                    b.HasOne("Driver.Models.ApplicationUser", "Driver")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("DriverID")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.HasOne("Driver.Models.ApplicationUser", "Passenger")
+                        .WithMany("Trips")
+                        .HasForeignKey("PassengerID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Passenger");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -402,6 +423,13 @@ namespace Driver.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Driver.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("Requests");
+
+                    b.Navigation("Trips");
                 });
 #pragma warning restore 612, 618
         }

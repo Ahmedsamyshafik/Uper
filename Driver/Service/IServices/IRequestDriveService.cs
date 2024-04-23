@@ -7,5 +7,6 @@ namespace Driver.Service.IServices
     {
         Task<RequestDriverResponseDTO> AddRequest(RequestDriverDTO requestDriverDTO);
         Task<List<RequestDrive>> GetDriverRequests(string driverId);
+        Task<string> HandleRequest(int requestID, bool Accept);
     }
 }
