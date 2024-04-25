@@ -1,5 +1,6 @@
 ﻿using Driver.DTOs.UserDriver;
 using Driver.Service.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,6 +24,7 @@ namespace Driver.Controllers
         }
 
         [HttpPost("[action]")]
+        [Authorize]
         public async Task<IActionResult> SendRequest(RequestDriverDTO dto)
         {
             RequestDriverResponseDTO isBusy = await _requestDriveService.AddRequest(dto);
@@ -30,6 +32,7 @@ namespace Driver.Controllers
         }
 
         [HttpPost("[action]")]
+        [Authorize]
         public async Task<IActionResult> Complete_Trip(int tripID)
         {
             await _tripService.CompleteTrip(tripID);
@@ -38,7 +41,7 @@ namespace Driver.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<IActionResult> Get_All_Available_Drivers(string? CarType, bool isSmoking)
+        public async Task<IActionResult> Get_All_Available_Drivers(string? CarType, bool isSmoking)//region
         {
             var response = await _userService.GetAllAvailableDrivers(isSmoking, CarType);
             return Ok(response);
@@ -53,6 +56,7 @@ namespace Driver.Controllers
         }
 
         [HttpPost("[action]")]
+        [Authorize]
         public async Task<IActionResult> AddRate(string DriverID, int Rate)
         {
            await _userService.AddRate(DriverID, Rate);

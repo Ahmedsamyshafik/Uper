@@ -38,6 +38,7 @@ namespace Driver.Service.Services
             passinger.Counter++;
             var Driver = await _userManager.FindByIdAsync(trip.DriverID);
             Driver.Counter++;
+            Driver.TotalPrice += trip.Price;
             await _userManager.UpdateAsync(Driver);
             await _userManager.UpdateAsync(passinger);
             await _TripRepository.UpdateAsync(trip);
@@ -52,6 +53,7 @@ namespace Driver.Service.Services
             foreach (var trip in trips)
             {
                 var temp=new GetAllTripResponse();  
+
                 temp.id = trip.id;
                 temp.Source = trip.Source;
                 temp.Target= trip.Target;

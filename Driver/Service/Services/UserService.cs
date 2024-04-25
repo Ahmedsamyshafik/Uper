@@ -36,7 +36,7 @@ namespace Driver.Service.Services
             }
             if (CarType != null)
             {
-                dbUsers = dbUsers.Where(x => x.CarType == CarType).ToList();
+                dbUsers = dbUsers.Where(x => x.CarType == CarType).ToList(); //drop list
             }
             //return
             var response = new List<GetAvailableDriversResponse>();
@@ -65,6 +65,7 @@ namespace Driver.Service.Services
         public async Task<GetDriverDetails> GetDriverDetails(string driverId)
         {
             var dbUser = await _userManager.FindByIdAsync(driverId);
+            //mapping
             var response = new GetDriverDetails()
             {
                 Address = dbUser.Address,
@@ -78,10 +79,11 @@ namespace Driver.Service.Services
                 name = dbUser.UserName,
                 Rate = await GetDriverRate(dbUser.Id),
                 Region = dbUser.Region,
-                ImageUrl = dbUser.imageUrl
+               
                
             };
             var DriverTrips = await _tripService.GetDriverTrips(driverId);
+
             var Trips = new List<DriverTripProberty>();
             foreach (var trip in DriverTrips)
             {
@@ -144,6 +146,7 @@ namespace Driver.Service.Services
             foreach (var user in BlockedUsers)
             {
                 var temp = new GetBlockedDrivers();
+
                 temp.id = user.Id;
                 temp.rate = await GetDriverRate(user.Id);
                 temp.TripsCount = user.Counter;
@@ -169,6 +172,12 @@ namespace Driver.Service.Services
             user.IsBlocked = false;
             await _userManager.UpdateAsync(user);
             return "";
+        }
+
+        public async Task<decimal> GetDriverTotalPrice(string driverID)
+        {
+            var user= await _userManager.FindByIdAsync(driverID);
+            return user.TotalPrice;
         }
         #endregion
 

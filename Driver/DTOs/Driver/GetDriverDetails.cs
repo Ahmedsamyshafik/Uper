@@ -15,7 +15,6 @@
         //عدد مرات الرحلات سواء لليوزر او الدرايفر
         public int Counter { get; set; }
 
-        public string? ImageUrl { get; set; }
         public string Gender { get; set; }
 
         public ICollection<DriverTripProberty>? Trips { get; set; }

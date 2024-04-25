@@ -1,5 +1,7 @@
 ﻿using Driver.DTOs.Driver;
+using Driver.Helpers;
 using Driver.Service.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,15 +13,17 @@ namespace Driver.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IRequestDriveService _driveService;
-        public DriverController(IAuthService authService, IRequestDriveService driveService)
+        private readonly IUserService _userService;
+        public DriverController(IAuthService authService, IRequestDriveService driveService, IUserService userService)
         {
             _authService = authService;
             _driveService = driveService;
-
+            _userService = userService;
         }
 
 
         [HttpPost("[action]")]
+        [Authorize(Roles = Constants.DriverRole)]
         public async Task<IActionResult> GetRequests(string DriverId)
         {
             //Get user from userid
@@ -50,13 +54,21 @@ namespace Driver.Controllers
         }
 
         [HttpPost("[action]")]
+        [Authorize(Roles = Constants.DriverRole)]
         public async Task<IActionResult> HandleRequest(int Requestid, bool Accept)
         {
             await _driveService.HandleRequest(Requestid, Accept);
             return Ok("Success");
         }
 
-
+        [HttpGet("[action]")]
+        [Authorize(Roles = Constants.DriverRole)]
+        public async Task<IActionResult> Get_Driver_Total_Price(string driverID)
+        {
+            GetDriverPriceResponse response = new();
+            response.Price= await _userService.GetDriverTotalPrice(driverID);
+            return Ok(response);
+        }
 
 
     }

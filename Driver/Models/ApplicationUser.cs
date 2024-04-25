@@ -17,6 +17,8 @@ namespace Driver.Models
         //عدد مرات الرحلات سواء لليوزر او الدرايفر
         public int Counter { get; set; }
 
+        public decimal TotalPrice { get; set; }
+
         public bool IsActive { get; set; }
 
         public string Gender { get; set; }

@@ -11,5 +11,6 @@ namespace Driver.Service.IServices
         Task<List<GetBlockedDrivers>> GetBlockedDrivers();
         Task<string> BlockDriver(string driverId);
         Task<string> UnBlockDriver(string driverId);
+        Task<decimal> GetDriverTotalPrice(string driverID);
     }
 }
